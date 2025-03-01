@@ -1,0 +1,39 @@
+import streamlit as st
+import yfinance as yf
+import pandas as pd
+import joblib
+
+# Load the pre-trained model
+model = joblib.load('linear_regression_aapl (1).pkl')
+
+# Title
+st.title("Stock Price Prediction")
+
+# User input
+stock = st.text_input("Enter stock symbol:", "AAPL")
+
+# Button
+if st.button("Predict"):
+    st.write(f"Predicting stock price for: {stock}")
+    
+    # Fetch historical data
+    data = yf.download(stock, start="2020-01-01", end="2023-01-01")
+    
+    if not data.empty:
+        # Prepare the data for prediction
+        X = data[['Open', 'High', 'Low', 'Volume']]
+        
+        # Make predictions
+        predictions = model.predict(X)
+        
+        # Add predictions to the dataframe
+        data['Predicted Close'] = predictions
+        
+        # Display the data
+        st.line_chart(data[['Close', 'Predicted Close']])
+        
+        # Display the last predicted price
+        predicted_price = predictions[-1]
+        st.write(f"Predicted stock price: {predicted_price:.2f}")
+    else:
+        st.write("Invalid stock symbol or no data available.")
